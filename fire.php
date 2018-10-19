@@ -6,6 +6,10 @@
 <title>Spot That Fire - Whitespace</title>
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
 <script type="text/javascript" src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-3.3.1.js"></script>
+<!--
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+-->
 <script type="text/javascript" src="https://www.bing.com/api/maps/mapcontrol?key=AlkQSf2WwyWqmfhNff-HT_ZJ23yrjexI7SzU0pZMoezJdoXRB8gGy4Hh8PLrgijP"></script>
 <script type="text/javascript">
 var map;
@@ -42,7 +46,7 @@ function loadMapScenario() {
     setP(p);
   }
   function setP(p) {
-    var pushpin = new Microsoft.Maps.Pushpin(p, { text: "A", title: "Title", subTitle: "Subtitle" });
+    var pushpin = new Microsoft.Maps.Pushpin(p, { icon: '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"><text x="0" y="30" style="font-size: 30px">&#x1F525;</text></svg>', title: "Title", subTitle: "Subtitle" });
     map.entities.push(pushpin);
   
     var infobox = new Microsoft.Maps.Infobox(p, { title: "Infobox",
@@ -73,6 +77,7 @@ $(document).ready(function() {
   });
 
   $("#option1").click(function(e) {
+    console.log("#option1 clicked");
     if (mapMode) {
       $("#listContainer").show();
       $("#mapContainer").hide();
@@ -81,6 +86,19 @@ $(document).ready(function() {
       $("#listContainer").hide();
     }
     mapMode = !mapMode;
+  });
+
+  $("#option2").click(function(e) {
+    console.log("#option2 clicked");
+    if (!mapMode) {
+      $("#option1").click();
+    }
+
+    $("#myModal").show();
+  });
+
+  $("#closeModal, #closeButton").click(function(e) {
+    $("#myModal").hide();
   });
 });
 </script>
@@ -95,6 +113,28 @@ $(document).ready(function() {
       </div>
     </div>
   </div>
+
+  <div id="myModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Modal title</h5>
+          <button id="closeModal" type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Modal body text goes here.</p>
+        </div>
+        <div class="modal-footer">
+          <button id="submitButton" type="button" class="btn btn-primary">Submit</button>
+          <button id="closeButton" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!--<div style="position: absolute; left: 0; right: 0; margin: auto; z-index: 999;">&#x1F525;</div>-->
 
   <div id="myMap" style="width: 100vw; height: 100vh;"></div>
 </div>
@@ -127,10 +167,10 @@ $(document).ready(function() {
 <div id="menuContainer" class="text-center" style="width: 100vw; position: absolute; left: 0; bottom: 10px; z-index: 999;">
   <div class="btn-group btn-group-toggle" data-toggle="buttons">
   <label class="btn btn-secondary active">
-    <input type="radio" name="options" id="option1" autocomplete="off" checked>Button
+    <input type="radio" name="options" id="option1" autocomplete="off">Map/List
   </label>
   <label class="btn btn-secondary">
-    <input type="radio" name="options" id="option2" autocomplete="off">Button
+    <input type="radio" name="options" id="option2" autocomplete="off">Report
   </label>
   <label class="btn btn-secondary">
     <input type="radio" name="options" id="option3" autocomplete="off">Button
