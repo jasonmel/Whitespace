@@ -16,4 +16,6 @@ if(!$conn)
 
 if(!@mysqli_select_db($conn, $db_name))
     die("Failed in db selection");
+
+mysqli_query($conn, "SET NAMES utf8");
 ?>
