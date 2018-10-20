@@ -90,6 +90,7 @@ var map;
 var searchManager;
 var mapMode = true;
 var centerPushpin;
+var fires = [];
 var pushpins = [];
 var infoboxes = [];
 var cards = [];
@@ -136,21 +137,9 @@ function getStatusTag(fire) {
   return tag;
 }
 
-function getFeedback(fire, i, mode) {
-  var likeId = 'like_' + mode + '_' + i;
-  var dislikeId = 'dislike_' + mode + '_' + i;
-  var likedClass = (fire.agree) ? ' class="liked"' : '';
-  var dislikedClass = (fire.disagree) ? ' class="disliked"' : '';
-  var feedback = '<span id="' + likeId + '"' + likedClass + '>&#x1F44D; ' + fire.agreesum + '</span> &nbsp; <span id="' + dislikeId + '"' + dislikedClass + '>&#x1F44E; ' + fire.disagreesum + '</span>';
-
-  return feedback;
-}
-
-function addFeedbackEventHandler(fire, i, mode) {
-  var likeId = 'like_' + mode + '_' + i;
-  var dislikeId = 'dislike_' + mode + '_' + i;
-
-  $("#" + likeId).click(function(e) {
+function updateOpinion(i, opinion) {
+  var fire = fires[i];
+  if (opinion == 1) {
     $.post( "api/update_opinion.php", {
       eid: fire.id,
       uname: uid,
@@ -170,13 +159,9 @@ function addFeedbackEventHandler(fire, i, mode) {
 	fire.agreesum += 1;
       }
 
-      updateOpinion(fire, i);
+      updateOpinionElements(fire, i);
     });
-
-    e.stopPropagation();
-    return false;
-  });
-  $("#" + dislikeId).click(function(e) {
+  } else if (opinion == -1) {
     $.post( "api/update_opinion.php", {
       eid: fire.id,
       uname: uid,
@@ -196,15 +181,43 @@ function addFeedbackEventHandler(fire, i, mode) {
 	fire.disagreesum += 1;
       }
 
-      updateOpinion(fire, i);
+      updateOpinionElements(fire, i);
     });
+  }
+}
+
+function getFeedback(fire, i, mode) {
+  var likeId = 'like_' + mode + '_' + i;
+  var dislikeId = 'dislike_' + mode + '_' + i;
+  var likedClass = (fire.agree) ? ' class="liked"' : '';
+  var dislikedClass = (fire.disagree) ? ' class="disliked"' : '';
+  var feedback = '<span id="' + likeId + '"' + likedClass + '>&#x1F44D; ' + fire.agreesum + '</span> &nbsp; <span id="' + dislikeId + '"' + dislikedClass + '>&#x1F44E; ' + fire.disagreesum + '</span>';
+  if (mode == "map") {
+    feedback = '<span id="' + likeId + '"' + likedClass + ' onclick="updateOpinion(' + i + ', 1); return false;">&#x1F44D; ' + fire.agreesum + '</span> &nbsp; <span id="' + dislikeId + '"' + dislikedClass + ' onclick="updateOpinion(' + i + ', -1); return false;">&#x1F44E; ' + fire.disagreesum + '</span>';
+  }
+
+  return feedback;
+}
+
+function addFeedbackEventHandler(fire, i, mode) {
+  var likeId = 'like_' + mode + '_' + i;
+  var dislikeId = 'dislike_' + mode + '_' + i;
+
+  $("#" + likeId).click(function(e) {
+    updateOpinion(i, 1);
+
+    e.stopPropagation();
+    return false;
+  });
+  $("#" + dislikeId).click(function(e) {
+    updateOpinion(i, -1);
 
     e.stopPropagation();
     return false;
   });
 }
 
-function updateOpinion(fire, i) {
+function updateOpinionElements(fire, i) {
   var likeMapId = 'like_map_' + i;
   var dislikeMapId = 'dislike_map_' + i;
   var likeListId = 'like_list_' + i;
@@ -276,6 +289,7 @@ function initFires() {
   $("#myListUl").empty();
   $.getJSON( "api/query_event.php?uname=" + uid, function( data ) {
     console.log(data);
+    fires = data;
     for (var i = 0; i < data.length; i++) {
       var fire = data[i];
       addFireOnMap(fire, i);
