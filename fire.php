@@ -133,27 +133,12 @@ function getTime(fire) {
   return time;
 }
 
-function loadMapScenario() {
-  map = new Microsoft.Maps.Map(document.getElementById("myMap"), {});
-  Microsoft.Maps.loadModule("Microsoft.Maps.Search", function () {
-    searchManager = new Microsoft.Maps.Search.SearchManager(map);
-  });
-
-  Microsoft.Maps.loadModule("Microsoft.Maps.AutoSuggest", {
-    callback: onLoad,
-    errorCallback: onError
-  });
-  function onLoad() {
-    var options = { maxResults: 5 };
-    var manager = new Microsoft.Maps.AutosuggestManager(options);
-    manager.attachAutosuggest("#searchInput", "#searchContainer", selectedSuggestion);
-  }
-  function onError(message) {
-  }
-  function selectedSuggestion(suggestionResult) {
-  }
+function initFires() {
+  pushpins = [];
+  infoboxes = [];
 
   // get all fires
+  map.entities.clear();
   $("#myListUl").empty();
   $.getJSON( "api/getAllFires.php", function( data ) {
     for (var i = 0; i < data.length; i++) {
@@ -204,6 +189,30 @@ function loadMapScenario() {
     });
     $("#myListUl").append(li);
   }
+}
+
+function loadMapScenario() {
+  map = new Microsoft.Maps.Map(document.getElementById("myMap"), {});
+  Microsoft.Maps.loadModule("Microsoft.Maps.Search", function () {
+    searchManager = new Microsoft.Maps.Search.SearchManager(map);
+  });
+
+  Microsoft.Maps.loadModule("Microsoft.Maps.AutoSuggest", {
+    callback: onLoad,
+    errorCallback: onError
+  });
+  function onLoad() {
+    var options = { maxResults: 5 };
+    var manager = new Microsoft.Maps.AutosuggestManager(options);
+    manager.attachAutosuggest("#searchInput", "#searchContainer", selectedSuggestion);
+  }
+  function onError(message) {
+  }
+  function selectedSuggestion(suggestionResult) {
+  }
+
+  // init fires
+  initFires();
 
   // get user location and center map on that
   var p = new Microsoft.Maps.Location(25.026249, 121.527511);
@@ -244,9 +253,23 @@ $(document).ready(function() {
     searchManager.geocode(requestOptions);
   });
 
+  $("#reportSubmitButton").click(function(e) {
+    var mapCenter = map.getCenter();
+    $.post( "api/report.php", {
+      reporter: id,
+      lat: mapCenter.latitude,
+      lon: mapCenter.longitude,
+      title: $("#title").val(),
+      description: $("#description").val(),
+    }).done(function( data ) {
+      // TODO: Thank you...
+      $("#reportModal").hide();
+      initFires();
+    });
+  });
+
   $("#idSubmitButton").click(function(e) {
     $.get( "setcookie.php?id=" + $("#id").val(), function( data ) {
-      console.log('hihi');
       id = $("#id").val();
       $("#idModal").hide();
     });
