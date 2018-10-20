@@ -3,17 +3,18 @@
 $success = 0;
 
 include("set_db.php");
-if(!isset($_POST["name"]))
+if(!isset($_POST["uname"]))
 {
     echo('undefine');
 }
+$uname = $_POST["uname"];
 $eid = $_POST["eid"];
 $status = $_POST["status"];
 
 ///////////////////////
 // convert name to uid
 $uid = -1;
-$sql = 'select uid,super from user where name = "'.$_POST["name"].'"';
+$sql = 'select uid,super from user where name = "'.$uname.'"';
 if($debug)echo("query str".$sql."<br />\n");
 $result = mysqli_query($conn, $sql);
 if($result)
@@ -42,14 +43,3 @@ else{
     $success = (int)$createresult;
 }
 ?>
-<html>
-   <body>
-   
-      <form action = "<?php $_PHP_SELF ?>" method = "POST">
-        User name: <input type = "text" name = "name" /><br />
-        Event id: <input type = "text" name = "eid" /><br />
-        Status (0/1/2): <input type = "text" name = "status" /><br />
-        <input type = "submit" />
-      </form>
-   </body>
-</html>

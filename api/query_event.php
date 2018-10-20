@@ -37,7 +37,7 @@ if($uid_user==-1)
     $success = 0;
 }
 
-$sql = 'select eid as id, title, name as reporter, date, lat, lon, description, agree as agreesum, disagree as disagreesum from event, user where event.uid = user.uid ';
+$sql = 'select eid as id, title, name as reporter, date, lat, lon, description, agree as agreesum, disagree as disagreesum, status from event, user where event.uid = user.uid ';
 mysqli_query($conn, "SET NAMES utf8");
 
 if($debug)echo("query str:".$sql."<br />\n");
@@ -57,6 +57,7 @@ if($result)
         $row["disagree"] = 0;
         $row["agreesum"] = (int)$row["agreesum"];
         $row["disagreesum"] = (int)$row["disagreesum"];
+        $row["status"] = (int)$row["status"];
         $totalcnt = $totalcnt + 1;
         array_push($stack, $row);
     }

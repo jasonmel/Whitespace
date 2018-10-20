@@ -94,23 +94,43 @@ var pushpins = [];
 var infoboxes = [];
 var cards = [];
 
-function getStatusEmoji(status) {
+function getStatusEmoji(fire) {
   var emoji = "&#x1F525;"; // Fire - https://emojipedia.org/fire/
-  if (status == 1) {
+  if (fire.status == 1) {
     emoji = "&#x1F692;"; // Fire Engine - https://emojipedia.org/fire-engine/
-  } else if (status == 2) {
+  } else if (fire.status == 2) {
     emoji = "&#x1F4A7;"; // Droplet - https://emojipedia.org/droplet/
   }
 
   return emoji;
 }
 
-function getStatusTag(status) {
+function updateStatus(eid, value) {
+  $.post( "api/solve_event.php", {
+    eid: eid,
+    uname: uid,
+    status: value,
+  }).done(function( data ) {
+    console.log(data);
+  });
+}
+
+function getStatusTag(fire) {
   var tag = '<span class="status onfire">On Fire</span>';
-  if (status == 1) {
+  if (fire.status == 1) {
     tag = '<span class="status extinguishing">Extinguishing</span>';
-  } else if (status == 2) {
+  } else if (fire.status == 2) {
     tag = '<span class="status extinguished">Extinguished</span>';
+  }
+
+  if (uid == "admin") {
+    tag = `
+<select onchange="updateStatus(` + fire.id + `, ` + `this.value);">
+  <option value="0">On Fire</option>
+  <option value="1">Extinguishing</option>
+  <option value="2">Extinguished</option>
+</select>
+`;
   }
 
   return tag;
@@ -263,8 +283,8 @@ function initFires() {
     }
   });
   function addFireOnMap(fire, i) {
-    var statusEmoji = getStatusEmoji(fire.status);
-    var statusTag = getStatusTag(fire.status);
+    var statusEmoji = getStatusEmoji(fire);
+    var statusTag = getStatusTag(fire);
     var feedback = getFeedback(fire, i, "map");
     var name = getName(fire);
     var time = getTime(fire);
@@ -302,8 +322,8 @@ function initFires() {
     addFeedbackEventHandler(fire, i, "map");
   }
   function addFireOnList(fire, i) {
-    var statusEmoji = getStatusEmoji(fire.status);
-    var statusTag = getStatusTag(fire.status);
+    var statusEmoji = getStatusEmoji(fire);
+    var statusTag = getStatusTag(fire);
     var feedback = getFeedback(fire, i, "list");
     var name = getName(fire);
     var time = getTime(fire);
