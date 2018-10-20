@@ -119,9 +119,9 @@ function getStatusTag(status) {
 function getFeedback(fire, i, mode) {
   var likeId = 'like_' + mode + '_' + i;
   var dislikeId = 'dislike_' + mode + '_' + i;
-  var likedClass = (fire.liked) ? ' class="liked"' : '';
-  var dislikedClass = (fire.disliked) ? ' class="disliked"' : '';
-  var feedback = '<span id="' + likeId + '"' + likedClass + '>&#x1F44D; ' + fire.like + '</span> &nbsp; <span id="' + dislikeId + '"' + dislikedClass + '>&#x1F44E; ' + fire.dislike + '</span>';
+  var likedClass = (fire.agree) ? ' class="liked"' : '';
+  var dislikedClass = (fire.disagree) ? ' class="disliked"' : '';
+  var feedback = '<span id="' + likeId + '"' + likedClass + '>&#x1F44D; ' + fire.agreesum + '</span> &nbsp; <span id="' + dislikeId + '"' + dislikedClass + '>&#x1F44E; ' + fire.disagreesum + '</span>';
 
   return feedback;
 }
@@ -131,23 +131,23 @@ function addFeedbackEventHandler(fire, i, mode) {
   var dislikeId = 'dislike_' + mode + '_' + i;
 
   $("#" + likeId).click(function(e) {
-    $.post( "api/opinion.php", {
+    $.post( "api/update_opinion.php", {
       eid: fire.id,
-      uid: uid,
+      uname: uid,
       opinion: 1,
     }).done(function( data ) {
       console.log(data);
-      if (fire.liked && !fire.disliked) {
-        fire.liked = false;
-	fire.like -= 1;
-      } else if (!fire.liked && fire.disliked) {
-        fire.liked = true;
-	fire.like += 1;
-        fire.disliked = false;
-	fire.dislike -= 1;
-      } else if (!fire.liked && !fire.disliked) {
-        fire.liked = true;
-	fire.like += 1;
+      if (fire.agree && !fire.disagree) {
+        fire.agree = false;
+	fire.agreesum -= 1;
+      } else if (!fire.agree && fire.disagree) {
+        fire.agree = true;
+	fire.agreesum += 1;
+        fire.disagree = false;
+	fire.disagreesum -= 1;
+      } else if (!fire.agree && !fire.disagree) {
+        fire.agree = true;
+	fire.agreesum += 1;
       }
 
       updateOpinion(fire, i);
@@ -157,23 +157,23 @@ function addFeedbackEventHandler(fire, i, mode) {
     return false;
   });
   $("#" + dislikeId).click(function(e) {
-    $.post( "api/opinion.php", {
+    $.post( "api/update_opinion.php", {
       eid: fire.id,
-      uid: uid,
+      uname: uid,
       opinion: -1,
     }).done(function( data ) {
       console.log(data);
-      if (fire.liked && !fire.disliked) {
-        fire.liked = false;
-	fire.like -= 1;
-        fire.disliked = true;
-	fire.dislike += 1;
-      } else if (!fire.liked && fire.disliked) {
-        fire.disliked = false;
-	fire.dislike -= 1;
-      } else if (!fire.liked && !fire.disliked) {
-        fire.disliked = true;
-	fire.dislike += 1;
+      if (fire.agree && !fire.disagree) {
+        fire.agree = false;
+	fire.agreesum -= 1;
+        fire.disagree = true;
+	fire.disagreesum += 1;
+      } else if (!fire.agree && fire.disagree) {
+        fire.disagree = false;
+	fire.disagreesum -= 1;
+      } else if (!fire.agree && !fire.disagree) {
+        fire.disagree = true;
+	fire.disagreesum += 1;
       }
 
       updateOpinion(fire, i);
@@ -189,10 +189,10 @@ function updateOpinion(fire, i) {
   var dislikeMapId = 'dislike_map_' + i;
   var likeListId = 'like_list_' + i;
   var dislikeListId = 'dislike_list_' + i;
-  var likeValue = '&#x1F44D; ' + fire.like;
-  var dislikeValue = '&#x1F44E; ' + fire.dislike;
+  var likeValue = '&#x1F44D; ' + fire.agreesum;
+  var dislikeValue = '&#x1F44E; ' + fire.disagreesum;
 
-  if (fire.liked) {
+  if (fire.agree) {
     $("#" + likeMapId).addClass("liked");
     $("#" + likeListId).addClass("liked");
   } else {
@@ -204,7 +204,7 @@ function updateOpinion(fire, i) {
   $("#" + likeMapId).html(likeValue);
   $("#" + likeListId).html(likeValue);
 
-  if (fire.disliked) {
+  if (fire.disagree) {
     $("#" + dislikeMapId).addClass("disliked");
     $("#" + dislikeListId).addClass("disliked");
   } else {
@@ -224,14 +224,14 @@ function getName(fire) {
 }
 
 function getTime(fire) {
-  var timeStr = fire.time.date;
+  var timeStr = fire.date;
   var time = '<time class="time">' + timeStr.substring(0, timeStr.lastIndexOf(":")) + '</time>';
 
   return time;
 }
 
 function viewComments(eid) {
-  $.getJSON( "api/comments.php?eid=" + eid, function( data ) {
+  $.getJSON( "api/query_comment.php?eid=" + eid, function( data ) {
     console.log(data);
     $("#commentEid").val(eid);
     $("#commentUl").empty();
@@ -239,7 +239,7 @@ function viewComments(eid) {
       comment = data[i];
 
       var li = $('<li class="list-group-item"></li>');
-      li.append($('<div class="body" style="padding: 0;">' + comment.comment + '</div><div class="footer"><div class="right"><span class="name">' + comment.uid + '</span> · ' + getTime(comment) + '</div></div>'));
+      li.append($('<div class="body" style="padding: 0;">' + comment.comment + '</div><div class="footer"><div class="right"><span class="name">' + comment.name + '</span> · ' + getTime(comment) + '</div></div>'));
       $("#commentUl").append(li);
     }
     $("#commentModal").show();
@@ -254,7 +254,7 @@ function initFires() {
   // get all fires
   map.entities.clear();
   $("#myListUl").empty();
-  $.getJSON( "api/getAllFires.php", function( data ) {
+  $.getJSON( "api/query_event.php?uname=" + uid, function( data ) {
     console.log(data);
     for (var i = 0; i < data.length; i++) {
       var fire = data[i];
@@ -269,9 +269,9 @@ function initFires() {
     var name = getName(fire);
     var time = getTime(fire);
     var iconSize = 32;
-    if (fire.like - fire.dislike > 100) {
+    if (fire.agreesum - fire.disagreesum > 100) {
       iconSize = 48;
-    } else if (fire.like - fire.dislike > 1000) {
+    } else if (fire.agreesum - fire.disagreesum > 1000) {
       iconSize = 64;
     }
 
@@ -385,8 +385,8 @@ $(document).ready(function() {
 
   $("#reportSubmitButton").click(function(e) {
     var mapCenter = map.getCenter();
-    $.post( "api/report.php", {
-      reporter: uid,
+    $.post( "api/create_event.php", {
+      uname: uid,
       lat: mapCenter.latitude,
       lon: mapCenter.longitude,
       title: $("#title").val(),
@@ -410,12 +410,12 @@ $(document).ready(function() {
   $("#commentSubmitButton").click(function(e) {
     $.post( "api/push_comment.php", {
       eid: $("#commentEid").val(),
-      uid: uid,
+      uname: uid,
       comment: $("#commentInput").val(),
     }).done(function( data ) {
       console.log(data);
       var li = $('<li class="list-group-item"></li>');
-      li.append($('<div class="body" style="padding: 0;">' + comment.comment + '</div><div class="footer"><div class="right"><span class="name">' + uid + '</span> · <span class="time">Now</span></div></div>'));
+      li.append($('<div class="body" style="padding: 0;">' + $("#commentInput").val() + '</div><div class="footer"><div class="right"><span class="name">' + uid + '</span> · <span class="time">Now</span></div></div>'));
       $("#commentUl").append(li);
     });
   });

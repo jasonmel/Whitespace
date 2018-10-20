@@ -7,14 +7,15 @@ if(!isset($_POST["uname"]))
 {
     echo('undefine');
 }
-$uname = $_POST["uname"];
-$eid = $_POST["eid"];
-$comment = $_POST["comment"];
+$lat = $_POST["lat"];
+$lon = $_POST["lon"];
+$description = $_POST["description"];
+$title = $_POST["title"];
 
 ///////////////////////
 // convert name to uid
 $uid = -1;
-$sql = 'select uid from user where name = "'.$uname.'"';
+$sql = 'select uid from user where name = "'.$_POST["uname"].'"';
 if($debug)echo("query str".$sql."<br />\n");
 $result = mysqli_query($conn, $sql);
 if($result)
@@ -34,12 +35,13 @@ if($uid==-1)
     $success = 0;
 }
 else{
-    // push comment
-    $formatstr = sprintf("%d, %d, %d, '%s'", $uid, $eid, time(), mysqli_real_escape_string($conn,$comment));
-    $sqlcreate = 'INSERT INTO comment(uid,eid,time,comment) VALUES('.$formatstr.')';
+    // create event
+    $formatstr = sprintf("%d, %f, %f, %d, 0, '%s', '%s'", $uid, $lat, $lon, time(),mysqli_real_escape_string($conn,$title),mysqli_real_escape_string($conn,$description));
+    $sqlcreate = 'INSERT INTO event(uid,lat,lon,date,status,title,description) VALUES('.$formatstr.')';
     if($debug)echo($sqlcreate);
     $createresult = mysqli_query($conn, $sqlcreate);
     if($debug)echo('Create Results: '.((int)$createresult)."<br />\n");
     $success = (int)$createresult;
+    echo $success;
 }
 ?>
