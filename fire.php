@@ -45,6 +45,9 @@
 .status.extinguished {
   background: SeaGreen;
 }
+.status.fake {
+  background: Gray;
+}
 .opinion {
   cursor: pointer;
 }
@@ -101,6 +104,8 @@ function getStatusEmoji(fire) {
     emoji = "&#x1F692;"; // Fire Engine - https://emojipedia.org/fire-engine/
   } else if (fire.status == 2) {
     emoji = "&#x1F4A7;"; // Droplet - https://emojipedia.org/droplet/
+  } else if (fire.status == 3) {
+    emoji = "&#x1F4A9;"; // Pile of Poo - https://emojipedia.org/pile-of-poo/
   }
 
   return emoji;
@@ -118,20 +123,25 @@ function updateStatus(eid, value) {
 
 function getStatusTag(fire) {
   var tag = '<span class="status onfire">On Fire</span>';
+  var option0 = '<option value="0">On Fire</option>';
+  var option1 = '<option value="1">Extinguishing</option>';
+  var option2 = '<option value="2">Extinghished</option>';
+  var option3 = '<option value="3">Fake</option>';
   if (fire.status == 1) {
     tag = '<span class="status extinguishing">Extinguishing</span>';
+    option1 = '<option value="1" selected>Extinguishing</option>';
   } else if (fire.status == 2) {
     tag = '<span class="status extinguished">Extinguished</span>';
+    option2 = '<option value="2" selected>Extinghished</option>';
+  } else if (fire.status == 3) {
+    tag = '<span class="status fake">Fake</span>';
+    option3 = '<option value="3" selected>Fake</option>';
   }
 
   if (uid == "admin") {
-    tag = `
-<select onchange="updateStatus(` + fire.id + `, ` + `this.value);">
-  <option value="0">On Fire</option>
-  <option value="1">Extinguishing</option>
-  <option value="2">Extinguished</option>
-</select>
-`;
+    var startTag = '<select onchange="updateStatus(' + fire.id + ', ' + 'this.value);">';
+    var endTag = '</select>';
+    tag = startTag + option0 + option1 + option2 + option3 + endTag;
   }
 
   return tag;
