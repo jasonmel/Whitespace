@@ -136,6 +136,7 @@ function addFeedbackEventHandler(fire, i, mode) {
       uid: uid,
       opinion: 1,
     }).done(function( data ) {
+      console.log(data);
       if (fire.liked && !fire.disliked) {
         fire.liked = false;
 	fire.like -= 1;
@@ -161,6 +162,7 @@ function addFeedbackEventHandler(fire, i, mode) {
       uid: uid,
       opinion: -1,
     }).done(function( data ) {
+      console.log(data);
       if (fire.liked && !fire.disliked) {
         fire.liked = false;
 	fire.like -= 1;
@@ -228,6 +230,22 @@ function getTime(fire) {
   return time;
 }
 
+function viewComments(eid) {
+  $.getJSON( "api/comments.php?eid=" + eid, function( data ) {
+    console.log(data);
+    $("#commentEid").val(eid);
+    $("#commentUl").empty();
+    for (var i = 0; i < data.length; i++) {
+      comment = data[i];
+
+      var li = $('<li class="list-group-item"></li>');
+      li.append($('<div class="body" style="padding: 0;">' + comment.comment + '</div><div class="footer"><div class="right"><span class="name">' + comment.uid + '</span> · ' + getTime(comment) + '</div></div>'));
+      $("#commentUl").append(li);
+    }
+    $("#commentModal").show();
+  });
+}
+
 function initFires() {
   pushpins = [];
   infoboxes = [];
@@ -237,6 +255,7 @@ function initFires() {
   map.entities.clear();
   $("#myListUl").empty();
   $.getJSON( "api/getAllFires.php", function( data ) {
+    console.log(data);
     for (var i = 0; i < data.length; i++) {
       var fire = data[i];
       addFireOnMap(fire, i);
@@ -262,7 +281,7 @@ function initFires() {
     pushpins.push(pushpin);
   
     var infobox = new Microsoft.Maps.Infobox(p, { title: fire.title,
-      description: '<div clsas="header">' + statusTag + '</div><hr><div class="body">' + fire.description + '</div><hr><div class="footer"><div class="left opinion">' + feedback + '</div><div class="right">' + name + '<br>' + time + '</div></div>',
+      description: '<div clsas="header">' + statusTag + '</div><hr><div class="body">' + fire.description + '<br><a href="#" style="font-size: 80%;" onclick="viewComments(' + fire.id + '); return false;">View comments</a></div><hr><div class="footer"><div class="left opinion">' + feedback + '</div><div class="right">' + name + '<br>' + time + '</div></div>',
       maxWidth: 600,
       maxHeight: 900,
       visible: false });
@@ -373,6 +392,7 @@ $(document).ready(function() {
       title: $("#title").val(),
       description: $("#description").val(),
     }).done(function( data ) {
+      console.log(data);
       // TODO: Thank you...
       $("#reportModal").hide();
       initFires();
@@ -381,8 +401,22 @@ $(document).ready(function() {
 
   $("#idSubmitButton").click(function(e) {
     $.get( "setcookie.php?uid=" + $("#uid").val(), function( data ) {
+      console.log(data);
       uid = $("#uid").val();
       $("#idModal").hide();
+    });
+  });
+
+  $("#commentSubmitButton").click(function(e) {
+    $.post( "api/push_comment.php", {
+      eid: $("#commentEid").val(),
+      uid: uid,
+      comment: $("#commentInput").val(),
+    }).done(function( data ) {
+      console.log(data);
+      var li = $('<li class="list-group-item"></li>');
+      li.append($('<div class="body" style="padding: 0;">' + comment.comment + '</div><div class="footer"><div class="right"><span class="name">' + uid + '</span> · <span class="time">Now</span></div></div>'));
+      $("#commentUl").append(li);
     });
   });
 
@@ -404,6 +438,7 @@ $(document).ready(function() {
 
     $("#reportModal").show();
     $("#idModal").hide();
+    $("#commentModal").hide();
   });
 
   $("#option3").click(function(e) {
@@ -413,6 +448,7 @@ $(document).ready(function() {
 
     $("#reportModal").hide();
     $("#idModal").show();
+    $("#commentModal").hide();
   });
 
   $("#reportCloseButton").click(function(e) {
@@ -421,6 +457,10 @@ $(document).ready(function() {
 
   $("#idCloseButton").click(function(e) {
     $("#idModal").hide();
+  });
+
+  $("#commentCloseButton").click(function(e) {
+    $("#commentModal").hide();
   });
 
   if (uid == null) {
@@ -493,6 +533,42 @@ $(document).ready(function() {
         </div>
         <div class="modal-footer">
           <button id="idSubmitButton" type="button" class="btn btn-primary">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="commentModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Comments</h5>
+          <button id="commentCloseButton" type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" style="max-height: 400px; overflow: scroll;">
+          <ul id="commentUl" class="list-group">
+            <li class="list-group-item">Cras justo odio</li>
+            <li class="list-group-item">Dapibus ac facilisis in</li>
+            <li class="list-group-item">Morbi leo risus</li>
+            <li class="list-group-item">Porta ac consectetur ac</li>
+            <li class="list-group-item">Vestibulum at eros</li>
+            <li class="list-group-item">Cras justo odio</li>
+            <li class="list-group-item">Dapibus ac facilisis in</li>
+            <li class="list-group-item">Morbi leo risus</li>
+            <li class="list-group-item">Porta ac consectetur ac</li>
+            <li class="list-group-item">Vestibulum at eros</li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <div class="input-group">
+            <input id="commentEid" type="hidden" class="form-control" value="0">
+            <input id="commentInput" type="text" class="form-control" placeholder="Comment...">
+            <div id="commentSubmitButton" class="input-group-append" style="cursor: pointer;">
+              <span class="input-group-text">Post</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
