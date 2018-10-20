@@ -67,6 +67,22 @@
 -->
 <script type="text/javascript" src="https://www.bing.com/api/maps/mapcontrol?key=AlkQSf2WwyWqmfhNff-HT_ZJ23yrjexI7SzU0pZMoezJdoXRB8gGy4Hh8PLrgijP"></script>
 <script type="text/javascript">
+function getCookie(cname) {
+  var name = cname + "=";
+  var decodedCookie = decodeURIComponent(document.cookie);
+  var ca = decodedCookie.split(';');
+  for(var i = 0; i <ca.length; i++) {
+    var c = ca[i];
+    while (c.charAt(0) == ' ') {
+      c = c.substring(1);
+    }
+    if (c.indexOf(name) == 0) {
+      return c.substring(name.length, c.length);
+    }
+  }
+  return null
+}
+var id = getCookie("id");
 var map;
 var searchManager;
 var mapMode = true;
@@ -228,6 +244,14 @@ $(document).ready(function() {
     searchManager.geocode(requestOptions);
   });
 
+  $("#idSubmitButton").click(function(e) {
+    $.get( "setcookie.php?id=" + $("#id").val(), function( data ) {
+      console.log('hihi');
+      id = $("#id").val();
+      $("#idModal").hide();
+    });
+  });
+
   $("#option1").click(function(e) {
     if (mapMode) {
       $("#listContainer").show();
@@ -245,6 +269,7 @@ $(document).ready(function() {
     }
 
     $("#reportModal").show();
+    $("#idModal").hide();
   });
 
   $("#option3").click(function(e) {
@@ -252,6 +277,7 @@ $(document).ready(function() {
       $("#option1").click();
     }
 
+    $("#reportModal").hide();
     $("#idModal").show();
   });
 
@@ -262,6 +288,12 @@ $(document).ready(function() {
   $("#idCloseButton").click(function(e) {
     $("#idModal").hide();
   });
+
+  if (id == null) {
+    $("#option3").click();
+  } else {
+    $("#id").val(id);
+  }
 });
 </script>
 </head>
@@ -299,7 +331,7 @@ $(document).ready(function() {
           </form>
         </div>
         <div class="modal-footer">
-          <button id="submitButton" type="button" class="btn btn-primary">Submit</button>
+          <button id="reportSubmitButton" type="button" class="btn btn-primary">Submit</button>
         </div>
       </div>
     </div>
@@ -310,9 +342,11 @@ $(document).ready(function() {
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Setup My ID</h5>
+          <!--
           <button id="idCloseButton" type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
+          -->
         </div>
         <div class="modal-body">
           <form>
@@ -324,7 +358,7 @@ $(document).ready(function() {
           </form>
         </div>
         <div class="modal-footer">
-          <button id="submitButton" type="button" class="btn btn-primary">Submit</button>
+          <button id="idSubmitButton" type="button" class="btn btn-primary">Submit</button>
         </div>
       </div>
     </div>
