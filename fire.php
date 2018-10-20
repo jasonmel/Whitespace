@@ -45,6 +45,9 @@
 .status.extinguished {
   background: SeaGreen;
 }
+.opinion {
+  cursor: pointer;
+}
 .liked {
   font-weight: bold;
   padding: 3px 6px;
@@ -82,13 +85,14 @@ function getCookie(cname) {
   }
   return null
 }
-var id = getCookie("id");
+var uid = getCookie("uid");
 var map;
 var searchManager;
 var mapMode = true;
 var centerPushpin;
 var pushpins = [];
 var infoboxes = [];
+var cards = [];
 
 function getStatusEmoji(status) {
   var emoji = "&#x1F525;"; // Fire - https://emojipedia.org/fire/
@@ -112,12 +116,103 @@ function getStatusTag(status) {
   return tag;
 }
 
-function getFeedback(fire, id) {
+function getFeedback(fire, i, mode) {
+  var likeId = 'like_' + mode + '_' + i;
+  var dislikeId = 'dislike_' + mode + '_' + i;
   var likedClass = (fire.liked) ? ' class="liked"' : '';
   var dislikedClass = (fire.disliked) ? ' class="disliked"' : '';
-  var feedback = '<span' + likedClass + '>&#x1F44D; ' + fire.like + '</span> &nbsp; <span' + dislikedClass + '>&#x1F44E; ' + fire.dislike + '</span>';
+  var feedback = '<span id="' + likeId + '"' + likedClass + '>&#x1F44D; ' + fire.like + '</span> &nbsp; <span id="' + dislikeId + '"' + dislikedClass + '>&#x1F44E; ' + fire.dislike + '</span>';
 
   return feedback;
+}
+
+function addFeedbackEventHandler(fire, i, mode) {
+  var likeId = 'like_' + mode + '_' + i;
+  var dislikeId = 'dislike_' + mode + '_' + i;
+
+  $("#" + likeId).click(function(e) {
+    $.post( "api/opinion.php", {
+      eid: fire.id,
+      uid: uid,
+      opinion: 1,
+    }).done(function( data ) {
+      if (fire.liked && !fire.disliked) {
+        fire.liked = false;
+	fire.like -= 1;
+      } else if (!fire.liked && fire.disliked) {
+        fire.liked = true;
+	fire.like += 1;
+        fire.disliked = false;
+	fire.dislike -= 1;
+      } else if (!fire.liked && !fire.disliked) {
+        fire.liked = true;
+	fire.like += 1;
+      }
+
+      updateOpinion(fire, i);
+    });
+
+    e.stopPropagation();
+    return false;
+  });
+  $("#" + dislikeId).click(function(e) {
+    $.post( "api/opinion.php", {
+      eid: fire.id,
+      uid: uid,
+      opinion: -1,
+    }).done(function( data ) {
+      if (fire.liked && !fire.disliked) {
+        fire.liked = false;
+	fire.like -= 1;
+        fire.disliked = true;
+	fire.dislike += 1;
+      } else if (!fire.liked && fire.disliked) {
+        fire.disliked = false;
+	fire.dislike -= 1;
+      } else if (!fire.liked && !fire.disliked) {
+        fire.disliked = true;
+	fire.dislike += 1;
+      }
+
+      updateOpinion(fire, i);
+    });
+
+    e.stopPropagation();
+    return false;
+  });
+}
+
+function updateOpinion(fire, i) {
+  var likeMapId = 'like_map_' + i;
+  var dislikeMapId = 'dislike_map_' + i;
+  var likeListId = 'like_list_' + i;
+  var dislikeListId = 'dislike_list_' + i;
+  var likeValue = '&#x1F44D; ' + fire.like;
+  var dislikeValue = '&#x1F44E; ' + fire.dislike;
+
+  if (fire.liked) {
+    $("#" + likeMapId).addClass("liked");
+    $("#" + likeListId).addClass("liked");
+  } else {
+    $("#" + likeMapId).removeClass("liked");
+    $("#" + likeListId).removeClass("liked");
+  }
+  $("#" + likeMapId).empty();
+  $("#" + likeListId).empty();
+  $("#" + likeMapId).html(likeValue);
+  $("#" + likeListId).html(likeValue);
+
+  if (fire.disliked) {
+    $("#" + dislikeMapId).addClass("disliked");
+    $("#" + dislikeListId).addClass("disliked");
+  } else {
+    $("#" + dislikeMapId).removeClass("disliked");
+    $("#" + dislikeListId).removeClass("disliked");
+  }
+  $("#" + dislikeMapId).empty();
+  $("#" + dislikeListId).empty();
+  $("#" + dislikeMapId).html(dislikeValue);
+  $("#" + dislikeListId).html(dislikeValue);
 }
 
 function getName(fire) {
@@ -136,6 +231,7 @@ function getTime(fire) {
 function initFires() {
   pushpins = [];
   infoboxes = [];
+  cards = [];
 
   // get all fires
   map.entities.clear();
@@ -150,17 +246,23 @@ function initFires() {
   function addFireOnMap(fire, i) {
     var statusEmoji = getStatusEmoji(fire.status);
     var statusTag = getStatusTag(fire.status);
-    var feedback = getFeedback(fire, i);
+    var feedback = getFeedback(fire, i, "map");
     var name = getName(fire);
     var time = getTime(fire);
+    var iconSize = 32;
+    if (fire.like - fire.dislike > 100) {
+      iconSize = 48;
+    } else if (fire.like - fire.dislike > 1000) {
+      iconSize = 64;
+    }
 
     var p = new Microsoft.Maps.Location(fire.lat, fire.lon);
-    var pushpin = new Microsoft.Maps.Pushpin(p, { icon: '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"><text x="0" y="28" style="font-size: 30px">' + statusEmoji + '</text></svg>', title: fire.title, subTitle: null });
+    var pushpin = new Microsoft.Maps.Pushpin(p, { icon: '<svg xmlns="http://www.w3.org/2000/svg" width="' + iconSize + '" height="' + iconSize + '"><text x="0" y="' + (iconSize - 4) + '" style="font-size: ' + (iconSize - 2) + 'px">' + statusEmoji + '</text></svg>', title: fire.title, subTitle: null });
     map.entities.push(pushpin);
     pushpins.push(pushpin);
   
     var infobox = new Microsoft.Maps.Infobox(p, { title: fire.title,
-      description: '<div clsas="header">' + statusTag + '</div><hr><div class="body">' + fire.description + '</div><hr><div class="footer"><div class="left">' + feedback + '</div><div class="right">' + name + '<br>' + time + '</div></div>',
+      description: '<div clsas="header">' + statusTag + '</div><hr><div class="body">' + fire.description + '</div><hr><div class="footer"><div class="left opinion">' + feedback + '</div><div class="right">' + name + '<br>' + time + '</div></div>',
       maxWidth: 600,
       maxHeight: 900,
       visible: false });
@@ -172,22 +274,31 @@ function initFires() {
         infoboxes[j].setOptions({ visible: false });
       }
       infobox.setOptions({ visible: true });
+
+      map.setView({
+        center: pushpin.getLocation()
+      });
     });
+
+    addFeedbackEventHandler(fire, i, "map");
   }
   function addFireOnList(fire, i) {
     var statusEmoji = getStatusEmoji(fire.status);
     var statusTag = getStatusTag(fire.status);
-    var feedback = getFeedback(fire, i);
+    var feedback = getFeedback(fire, i, "list");
     var name = getName(fire);
     var time = getTime(fire);
 
     var li = $('<a href="#" class="list-group-item list-group-item-action"></a>');
-    li.append($('<div class="header">' + statusEmoji + ' ' + fire.title + '</div><div class="body" style="padding: 5px 0 12px 0;">' + fire.description + '</div><div class="footer"><div class="left">' + feedback + '</div><div class="right">' + name + ' · ' + time + '</div></div>'));
+    li.append($('<div class="header">' + statusEmoji + ' ' + fire.title + '</div><div class="body" style="padding: 5px 0 12px 0;">' + fire.description + '</div><div class="footer"><div class="left opinion">' + feedback + '</div><div class="right">' + name + ' · ' + time + '</div></div>'));
     li.click(function(e) {
       $("#option1").click();
       Microsoft.Maps.Events.invoke(pushpins[i], 'click', { target: pushpins[i] });
     });
     $("#myListUl").append(li);
+    cards.push(li);
+
+    addFeedbackEventHandler(fire, i, "list");
   }
 }
 
@@ -256,7 +367,7 @@ $(document).ready(function() {
   $("#reportSubmitButton").click(function(e) {
     var mapCenter = map.getCenter();
     $.post( "api/report.php", {
-      reporter: id,
+      reporter: uid,
       lat: mapCenter.latitude,
       lon: mapCenter.longitude,
       title: $("#title").val(),
@@ -269,8 +380,8 @@ $(document).ready(function() {
   });
 
   $("#idSubmitButton").click(function(e) {
-    $.get( "setcookie.php?id=" + $("#id").val(), function( data ) {
-      id = $("#id").val();
+    $.get( "setcookie.php?uid=" + $("#uid").val(), function( data ) {
+      uid = $("#uid").val();
       $("#idModal").hide();
     });
   });
@@ -312,10 +423,10 @@ $(document).ready(function() {
     $("#idModal").hide();
   });
 
-  if (id == null) {
+  if (uid == null) {
     $("#option3").click();
   } else {
-    $("#id").val(id);
+    $("#uid").val(uid);
   }
 });
 </script>
@@ -344,12 +455,12 @@ $(document).ready(function() {
           <form>
             <div class="form-group">
               <label for="title">Title</label>
-              <input type="text" class="form-control" id="title" name="title" maxlength="30" placeholder="Fire Title...">
+              <input type="text" class="form-control" id="title" name="title" maxlength="30" placeholder="Fire Title..." required>
               <small id="titleHelp" class="form-text text-muted">No more than 30 characters...</small>
             </div>
             <div class="form-group">
               <label for="description">Description</label>
-              <textarea class="form-control" id="description" name="description" rows="3" placeholder="Fire Description...."></textarea>
+              <textarea class="form-control" id="description" name="description" rows="3" placeholder="Fire Description...." required></textarea>
             </div>
           </form>
         </div>
@@ -374,8 +485,8 @@ $(document).ready(function() {
         <div class="modal-body">
           <form>
             <div class="form-group">
-              <label for="id">My ID</label>
-              <input type="text" class="form-control" id="id" name="id" maxlength="20" placeholder="My ID...">
+              <label for="uid">My ID</label>
+              <input type="text" class="form-control" id="uid" name="uid" maxlength="20" placeholder="My ID..." required>
               <small id="idHelp" class="form-text text-muted">No more than 20 characters...</small>
             </div>
           </form>
