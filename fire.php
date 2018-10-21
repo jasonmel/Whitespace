@@ -290,6 +290,7 @@ function viewComments(eid) {
       li.append($('<div class="body" style="padding: 0;">' + comment.comment + '</div><div class="footer"><div class="right"><span class="name">' + comment.name + '</span> · ' + getTime(comment) + '</div></div>'));
       $("#commentUl").append(li);
     }
+    $("#commentInput").val("");
     $("#commentModal").show();
   });
 }
@@ -485,6 +486,8 @@ $(document).ready(function() {
       $("#option1").click();
     }
 
+    $("#title").val("");
+    $("#description").val("");
     $("#reportModal").show();
     $("#idModal").hide();
     $("#commentModal").hide();

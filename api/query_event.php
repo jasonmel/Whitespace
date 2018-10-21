@@ -37,7 +37,7 @@ if($uid_user==-1)
     $success = 0;
 }
 
-$sql = 'select eid as id, title, name as reporter, date, lat, lon, description, agree as agreesum, disagree as disagreesum, status from event, user where event.uid = user.uid ';
+$sql = 'select eid as id, title, name as reporter, date, lat, lon, description, agree as agreesum, disagree as disagreesum, status from event, user where event.uid = user.uid order by date desc';
 mysqli_query($conn, "SET NAMES utf8");
 
 if($debug)echo("query str:".$sql."<br />\n");
