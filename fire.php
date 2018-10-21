@@ -318,9 +318,9 @@ function initFires() {
     var name = getName(fire);
     var time = getTime(fire);
     var iconSize = 32;
-    if (fire.agreesum - fire.disagreesum > 100) {
+    if (fire.agreesum - fire.disagreesum > 5) {
       iconSize = 48;
-    } else if (fire.agreesum - fire.disagreesum > 1000) {
+    } else if (fire.agreesum - fire.disagreesum > 10) {
       iconSize = 64;
     }
 
