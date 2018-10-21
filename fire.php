@@ -318,10 +318,10 @@ function initFires() {
     var name = getName(fire);
     var time = getTime(fire);
     var iconSize = 32;
-    if (fire.agreesum - fire.disagreesum > 5) {
-      iconSize = 48;
-    } else if (fire.agreesum - fire.disagreesum > 10) {
+    if (fire.agreesum - fire.disagreesum > 10) {
       iconSize = 64;
+    } else if (fire.agreesum - fire.disagreesum > 5) {
+      iconSize = 48;
     }
 
     var p = new Microsoft.Maps.Location(fire.lat, fire.lon);
