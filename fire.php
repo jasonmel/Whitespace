@@ -11,6 +11,11 @@
 }
 .body {
 }
+.body .box {
+  max-width: 90vw;
+  max-height: 20vh;
+  overflow: scroll;
+}
 .footer {
   clear: both;
   font-size: 80%;
@@ -325,7 +330,7 @@ function initFires() {
     pushpins.push(pushpin);
   
     var infobox = new Microsoft.Maps.Infobox(p, { title: fire.title,
-      description: '<div clsas="header">' + statusTag + '</div><hr><div class="body">' + fire.description + '<br><a href="#" style="font-size: 80%;" onclick="viewComments(' + fire.id + '); return false;">View comments</a></div><hr><div class="footer"><div class="left opinion">' + feedback + '</div><div class="right">' + name + '<br>' + time + '</div></div>',
+      description: '<div clsas="header">' + statusTag + '</div><hr><div class="body"><div class="box">' + fire.description + '</div><br><a href="#" style="font-size: 80%;" onclick="viewComments(' + fire.id + '); return false;">View comments</a></div><hr><div class="footer"><div class="left opinion">' + feedback + '</div><div class="right">' + name + '<br>' + time + '</div></div>',
       maxWidth: 600,
       maxHeight: 900,
       visible: false });
@@ -591,19 +596,23 @@ $(document).ready(function() {
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body" style="max-height: 400px; overflow: scroll;">
-          <ul id="commentUl" class="list-group">
-            <li class="list-group-item">Cras justo odio</li>
-            <li class="list-group-item">Dapibus ac facilisis in</li>
-            <li class="list-group-item">Morbi leo risus</li>
-            <li class="list-group-item">Porta ac consectetur ac</li>
-            <li class="list-group-item">Vestibulum at eros</li>
-            <li class="list-group-item">Cras justo odio</li>
-            <li class="list-group-item">Dapibus ac facilisis in</li>
-            <li class="list-group-item">Morbi leo risus</li>
-            <li class="list-group-item">Porta ac consectetur ac</li>
-            <li class="list-group-item">Vestibulum at eros</li>
-          </ul>
+        <div class="modal-body">
+	  <div class="body">
+            <div class="box">
+              <ul id="commentUl" class="list-group">
+                <li class="list-group-item">Cras justo odio</li>
+                <li class="list-group-item">Dapibus ac facilisis in</li>
+                <li class="list-group-item">Morbi leo risus</li>
+                <li class="list-group-item">Porta ac consectetur ac</li>
+                <li class="list-group-item">Vestibulum at eros</li>
+                <li class="list-group-item">Cras justo odio</li>
+                <li class="list-group-item">Dapibus ac facilisis in</li>
+                <li class="list-group-item">Morbi leo risus</li>
+                <li class="list-group-item">Porta ac consectetur ac</li>
+                <li class="list-group-item">Vestibulum at eros</li>
+              </ul>
+	    </div>
+          </div>
         </div>
         <div class="modal-footer">
           <div class="input-group">
