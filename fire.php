@@ -326,7 +326,7 @@ function initFires() {
     }
 
     var p = new Microsoft.Maps.Location(fire.lat, fire.lon);
-    var pushpin = new Microsoft.Maps.Pushpin(p, { icon: '<svg xmlns="http://www.w3.org/2000/svg" width="' + iconSize + '" height="' + iconSize + '"><text x="0" y="' + (iconSize - 4) + '" style="font-size: ' + (iconSize - 2) + 'px">' + statusEmoji + '</text></svg>', title: fire.title, subTitle: null });
+    var pushpin = new Microsoft.Maps.Pushpin(p, { icon: '<svg xmlns="http://www.w3.org/2000/svg" width="' + iconSize + '" height="' + iconSize + '"><text x="0" y="' + (iconSize - 6) + '" style="font-size: ' + (iconSize - 6) + 'px">' + statusEmoji + '</text></svg>', title: fire.title, subTitle: null });
     map.entities.push(pushpin);
     pushpins.push(pushpin);
   
